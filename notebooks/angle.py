@@ -24,7 +24,7 @@ from angle_utils import AngleAnnotation
 # %%
 # Sharpening input
 d_w = 250 # diameter of the grinding or honing wheel
-l_p = 139 # 
+l_p = 300 # 
 beta = math.radians(20)
 
 # %%
@@ -36,7 +36,7 @@ l_c = t_b/2 * math.tan(beta) # correction to measured l_p
 # Machine settings
 d_s = 12 # diameter of the support
 d_j = 12 # diameter or thickness of the jig
-o_s = 50 # offset of the support horizontally
+o_s = 150 # offset of the support horizontally
 h_c = 29
 
 # %%
@@ -108,10 +108,30 @@ def simple_closed_path(vertices):
 
 
 # %%
+def jig_path(tp, p_l, angle, r_j, r_s):
+    r2 = r_j + 2 * r_s
+    l = l_p * 0.8
+    pt0 = (tp[0] + l_p * math.cos(angle), tp[1] + l_p * math.sin(angle))
+    pt1 = (pt0[0] + r_j * math.sin(angle), pt0[1] - r_j * math.cos(angle))
+    pt2 = (pt0[0] + r2 * math.sin(angle), pt0[1] - r2 * math.cos(angle))
+    pt3 = (pt2[0] + r_j * math.cos(angle), pt2[1] + r_j * math.sin(angle))
+    pt5 = (pt0[0] - r2 * math.sin(angle), pt0[1] + r2 * math.cos(angle))
+    pt4 = (pt5[0] + r_j * math.cos(angle), pt5[1] + r_j * math.sin(angle))
+    pt6 = (pt0[0] - r_j * math.sin(angle), pt0[1] + r_j * math.cos(angle))
+    pt7 = (pt6[0] - l * math.cos(angle), pt6[1] - l * math.sin(angle))
+    pt8 = (pt1[0] - l * math.cos(angle), pt1[1] - l * math.sin(angle))
+    return simple_closed_path([pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8, pt1])
+    
+    
+
+# %%
 points = [axel_center, support_center, tipp, jig_ref]
 
 fig, ax = plt.subplots()
 ax.set_aspect('equal')
+
+jig = mpatches.PathPatch(jig_path(tipp, l_p, alpha_6, d_j/2, d_s/2), alpha=0.4, color='grey') 
+ax.add_patch(jig)
 
 plt.scatter(*zip(*points), s=10, marker=".", c='black')
 
@@ -182,12 +202,14 @@ ax.yaxis.set_ticks([])
 ax.xaxis.set_ticks([])
 
 ax.set_ylim(bottom=-100)
-# ax.set_xlim(left=-75)
+#ax.set_xlim(left=-75)
 # ax.set_xlim(right=52)
 
 
 # %%
 import ipywidgets
+
+# %%
 
 # %%
 
