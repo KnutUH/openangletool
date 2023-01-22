@@ -24,24 +24,25 @@ from angle_utils import AngleAnnotation
 # %%
 # Sharpening input
 d_w = 250 # diameter of the grinding or honing wheel
-l_p = 300 # 
-beta = math.radians(20)
+l_p = 139 # distance from apex to outside support
+beta = math.radians(15)
 
 # %%
-# If the bevel is single sided (e.g, a chissel) the projected length should be corrected
-t_b = 3.5  # blade_thicknes at start of bevel
-l_c = t_b/2 * math.tan(beta) # correction to measured l_p
+# Add offset if the apex is offset from the centerline of the jig e.g., if the bevel is single sided 
+# (e.g, a chissel, offset=half blade thickness) or grinding an asymetric pocket knife (+/- 8 on my
+# Leatherman Wave on the SVM-00)
+apex_offset = 0
 
 # %%
 # Machine settings
 d_s = 12 # diameter of the support
 d_j = 12 # diameter or thickness of the jig
-o_s = 150 # offset of the support horizontally
-h_c = 29
+o_s = 50 # offset of the support horizontally
+h_c = 29 
 
 # %%
-# calculate the angle to correct for the thickness of the jig
-sj = (d_s + d_j)/2
+# calculate the angle to correct for the thickness of the jig and the apex
+sj = (d_s + d_j)/2 + apex_offset
 tj = l_p - d_s/2
 ts = math.sqrt(sj**2+tj**2)
 alpha = math.atan(sj/tj)
@@ -52,11 +53,12 @@ my = beta + math.pi/2 - alpha
 r = d_w/2
 os = math.sqrt(ts**2 + r**2 - 2*ts*r*math.cos(my))
 h_r = os - r + d_s/2
-sx = math.sqrt(os**2 - o_s**2)
-h_n = sx - h_c + d_s/2
+print(f'h_r: {h_r: .1f}')
+os
 
 # %%
-print(f'h_r: {h_r: .1f}')
+sx = math.sqrt(os**2 - o_s**2)
+h_n = sx - h_c + d_s/2
 print(f'h_n: {h_n: .1f}')
 
 # %% [markdown]
@@ -66,7 +68,7 @@ print(f'h_n: {h_n: .1f}')
 alpha_2 = math.acos((r**2 - ts**2 + os**2)/(2*r*os))
 alpha_3 = math.acos(o_s/os)
 alpha_4 = math.pi - alpha_3 - alpha_2
-alpha_5 = math.pi/2 - alpha_4
+alpha_5 = 0.5 * math.pi - alpha_4
 alpha_6 = beta + alpha_5
 tx = r * math.cos(alpha_5) #
 xo = r * math.sin(alpha_5)
@@ -74,8 +76,18 @@ jx = tx + tj * math.sin(alpha_6)
 jo = tj * math.cos(alpha_6) - xo
 
 # %%
+print("Beta:", math.degrees(beta))
+print("alpha:", math.degrees(alpha))
+print("alpha2:", math.degrees(alpha_2))
+print("alpha3:", math.degrees(alpha_3))
+print("alpha4:", math.degrees(alpha_4))
+print("alpha5:", math.degrees(alpha_5))
+print("alpha6:", math.degrees(alpha_6))
+
+# %%
 axel_center = (0, 0)
-support_center = (o_s, h_c + h_n - d_s/2)
+support_center = (os * math.cos(alpha_3), os * math.sin(alpha_3))
+# support_center = (o_s, h_c + h_n - d_s/2)
 tipp = (-xo, tx)
 jig_ref = (jo, jx)
 
@@ -125,6 +137,11 @@ def jig_path(tp, p_l, angle, r_j, r_s):
     
 
 # %%
+def blade_path():
+    
+
+
+# %%
 points = [axel_center, support_center, tipp, jig_ref]
 
 fig, ax = plt.subplots()
@@ -171,23 +188,23 @@ AngleAnnotation(
 )
 AngleAnnotation(
     tipp,
-    (-xo, axel_center[1]),
-    axel_center,
-    ax=ax, size=100, text=r"$\alpha_5$"
+    (min(-xo, axel_center[0]), axel_center[1]),
+    (max(-xo, axel_center[0]), axel_center[1]),
+    ax=ax, size=75, text=r"$\alpha_5$"
 )
 AngleAnnotation(
     tipp,
-    (tipp[0] + r, tipp[1]),
-    jig_ref,
-    ax=ax, size=250, text=r"$\alpha_6$"
+    (jig_ref[0], min(jig_ref[1], tipp[1])),
+    (jig_ref[0], max(jig_ref[1], tipp[1])),
+    ax=ax, size=280, text=r"$\alpha_6$"
 )
 
-plt.plot([axel_center[0] - r, axel_center[1] + r], [tipp[1], tipp[1]], c='grey', linestyle='--')
+plt.plot([axel_center[0] - r, max(support_center[0], axel_center[0] + r)], [tipp[1], tipp[1]], c='grey', linestyle='--')
 plt.plot([tipp[0], tipp[0]], [axel_center[1], axel_center[1] + tipp[1]], c='grey', linestyle='--')
 plt.plot([support_center[0], support_center[0]],
          [axel_center[1], axel_center[1] + sx], c='grey', linestyle='--')
 plt.plot([jig_ref[0], jig_ref[0]],
-         [tipp[1], axel_center[1] + jx], c='grey', linestyle='--')
+         [tipp[1], axel_center[1] +  jx], c='grey', linestyle='--')
 
 
 for spine_pos in ['left', 'bottom']:
@@ -206,8 +223,11 @@ ax.set_ylim(bottom=-100)
 # ax.set_xlim(right=52)
 
 
+
+
 # %%
-import ipywidgets
+print("alpha_4 =", math.degrees(alpha_4))
+print("alpha_5 =", math.degrees(alpha_5))
 
 # %%
 
