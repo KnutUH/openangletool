@@ -24,14 +24,14 @@ from angle_utils import AngleAnnotation
 # %%
 # Sharpening input
 d_w = 250 # diameter of the grinding or honing wheel
-l_p = 139 # distance from apex to outside support
+l_p = 151 # distance from apex to outside support
 beta = math.radians(15)
 
 # %%
 # Add offset if the apex is offset from the centerline of the jig e.g., if the bevel is single sided 
 # (e.g, a chissel, offset=half blade thickness) or grinding an asymetric pocket knife (+/- 8 on my
 # Leatherman Wave on the SVM-00)
-apex_offset = 0
+apex_offset = -3
 
 # %%
 # Machine settings
@@ -138,7 +138,8 @@ def jig_path(tp, p_l, angle, r_j, r_s):
 
 # %%
 def blade_path():
-    
+    pass
+
 
 
 # %%
@@ -150,7 +151,7 @@ ax.set_aspect('equal')
 jig = mpatches.PathPatch(jig_path(tipp, l_p, alpha_6, d_j/2, d_s/2), alpha=0.4, color='grey') 
 ax.add_patch(jig)
 
-plt.scatter(*zip(*points), s=10, marker=".", c='black')
+ptl.scatter(*zip(*points), s=10, marker=".", c='black')
 
 T8 = mpatches.PathPatch(simple_closed_path(t8_vertices), alpha=0.3)
 ax.add_patch(T8)
@@ -229,8 +230,42 @@ ax.set_ylim(bottom=-100)
 print("alpha_4 =", math.degrees(alpha_4))
 print("alpha_5 =", math.degrees(alpha_5))
 
-# %%
 
 # %%
+def plot_jig(ax, vertices, midPoint, theta):
+    
+    jig = patches.Polygon(vertices, color="red", alpha=0.50) 
+    r = mpl.transforms.Affine2D().rotate(theta) + ax.transData
+    t = mpl.transforms.Affine2D().translate(midPoint[0],midPoint[1]) + ax.transData
+    polygon.set_transform(r)
+    polygon.set_transform(t)
+    ax.add_patch(polygon)
+    
+    r = mpl.transforms.Affine2D().rotate(theta)
+    t = mpl.transforms.Affine2D().translate(midPoint[0],midPoint[1])
+    tra = r + t + ax.transData
+    polygon.set_transform(tra)
+
+plot_polygon(vertices, midPoint, theta)
+
+# %%
+import matplotlib as mpl
+
+points = [axel_center, support_center, tipp, jig_ref]
+
+fig, ax = plt.subplots()
+ax.set_aspect('equal')
+jig = mpatches.PathPatch(jig_path(tipp, l_p, alpha_6, d_j/2, d_s/2), alpha=0.4, color='grey') 
+ax.add_patch(jig)
+plt.scatter(*zip(*points), s=10, marker=".", c='black')
+            
+r = mpl.transforms.Affine2D().rotate(-45)
+t = mpl.transforms.Affine2D().translate(4, 5)
+tra = r + t + ax.transData
+
+ax.add_patch(jig.set_transform(tra))
+
+plt.show()
+
 
 # %%

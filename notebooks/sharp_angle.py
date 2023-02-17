@@ -10,12 +10,12 @@ sharpening_setup = {
     "Support diameter": 12,
 }
 
+
 # %%
-class SharpeningAngle():
+class SharpeningAngle:
     """Documentation for SharpeningAngle"""
 
     def __init__(self, sharpening_setup):
-
         self.radius_wheel = 0.5 * sharpening_setup["Wheel diameter"]
         self.jig_to_outside_support = sharpening_setup["Jig length"]
         self.thickness_jig = sharpening_setup["Jig thickness"]
@@ -25,9 +25,7 @@ class SharpeningAngle():
         self.center_support_to_jig_reference = (
             self.radius_support + 0.5 * self.thickness_jig + self.apex_offset
         )
-        self.apex_to_jig_reference = (
-            self.jig_to_outside_support - self.radius_support
-        )
+        self.apex_to_jig_reference = self.jig_to_outside_support - self.radius_support
         self.correction_angle = np.arctan(
             self.center_support_to_jig_reference / self.apex_to_jig_reference
         )
@@ -49,31 +47,33 @@ class SharpeningAngle():
 
     def distance_outside_support_to_wheel(self, angle_degree):
         return (
-            self.distance_center_axel_to_center_support(angle_degree) 
-            - self.radius_wheel + self.radius_support
+            self.distance_center_axel_to_center_support(angle_degree)
+            - self.radius_wheel
+            + self.radius_support
         )
-    
-    def vertical_distance_center_axel_to_center_support(self, angle_degree,
-                                                         horisontal_offset_support):
+
+    def vertical_distance_center_axel_to_center_support(
+        self, angle_degree, horisontal_offset_support
+    ):
         return np.sqrt(
-            self.distance_center_axel_to_center_support(angle_degree)**2 
+            self.distance_center_axel_to_center_support(angle_degree) ** 2
             - horisontal_offset_support**2
         )
-    
-    def horizontal_distance_center_axel_to_center_support(self, angle_degree,
-                                                         vertical_offset_support):
+
+    def horizontal_distance_center_axel_to_center_support(
+        self, angle_degree, vertical_offset_support
+    ):
         return np.sqrt(
-            self.distance_center_axel_to_center_support(angle_degree)**2 
+            self.distance_center_axel_to_center_support(angle_degree) ** 2
             - vertical_offset_support**2
         )
-   
+
     def sharpening_angle_degrees(self, distance):
         corrected_angle = np.acos(
-            (distanse**2 + self.apex_to_center_support**2 + self.radius_wheel**2)
+            (distance**2 + self.apex_to_center_support**2 + self.radius_wheel**2)
             / (2 * self.apex_to_center_support * self.radius_wheel)
         )
         return np.degrees(corrected_angle + self.correction_angle)
-    
 
 
 # %%
@@ -81,20 +81,22 @@ sa = SharpeningAngle(sharpening_setup)
 
 # %%
 print(vars(sa))
+print(
+    "hei",
+)
 
 # %%
 h_r = sa.distance_outside_support_to_wheel(15)
-print(f'h_r: {h_r: .1f}')
+print(f"h_r: {h_r: .1f}")
 
-vertical_distance_top_of_machine_to_center_axel = 29 # T8
-horizontal_offset_support = 50 # T8
+vertical_distance_top_of_machine_to_center_axel = 29  # T8
+horizontal_offset_support = 50  # T8
 h_n = (
-    sa.vertical_distance_center_axel_to_center_support(
-        15, horizontal_offset_support)
+    sa.vertical_distance_center_axel_to_center_support(15, horizontal_offset_support)
     - vertical_distance_top_of_machine_to_center_axel
     + sa.radius_support
 )
-print(f'h_n: {h_n: .1f}')
+print(f"h_n: {h_n: .1f}")
 
 # %%
 
