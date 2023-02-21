@@ -24,14 +24,14 @@ from angle_utils import AngleAnnotation
 # %%
 # Sharpening input
 d_w = 250 # diameter of the grinding or honing wheel
-l_p = 151 # distance from apex to outside support
+l_p = 139 # distance from apex to outside support
 beta = math.radians(15)
 
 # %%
 # Add offset if the apex is offset from the centerline of the jig e.g., if the bevel is single sided 
 # (e.g, a chissel, offset=half blade thickness) or grinding an asymetric pocket knife (+/- 8 on my
 # Leatherman Wave on the SVM-00)
-apex_offset = -3
+apex_offset = 0
 
 # %%
 # Machine settings
