@@ -1,9 +1,6 @@
 /** Class for grinding calculations */
 class Calc {
-
-    /**
-     * Create a calculator.
-     */
+    
     constructor() {
         this.solved = false;
     }
@@ -21,14 +18,30 @@ class Calc {
      * @return {number}  p.hc    Heigth of m
      */
     set(p) {
-        this.dw = Number.parseFloat(p.dw);
-        this.lp = Number.parseFloat(p.lp);
+	this.radius_wheel = 0.5 * Number.parseFloat(p.dw);
+        this.radius_support = 0.5 * Number.parseFloat(p.ds);
+        this.apex_to_jig_reference = Number.parseFloat(p.lp)  - this.radius_support;
+        this.thickness_jig = Number.parseFloat(p.dj);
+        this.apex_offset = 0
         this.beta = this.rad(Number.parseFloat(p.beta));
-        this.ds = Number.parseFloat(p.ds);
-        this.dj = Number.parseFloat(p.dj);
         this.o = Number.parseFloat(p.o);
         this.hc = Number.parseFloat(p.hc);
 
+	this.center_support_to_jig_reference = {
+	    this.radius_support + 0.5 * this.thickness_jig + this.apex_offset
+	}
+	
+	// the correction angle due to thickness of jig and apex offset
+	this.correction_angle = Math.arctan(
+            this.center_support_to_jig_reference / this.apex_to_jig_reference
+        )
+	
+	// pythagoras to calculate
+	this.apex_to_center_support = Math.sqrt(
+	    this.center_support_to_jig_reference**2 + this.apex_to_jig_reference**2
+	)
+
+	
         this.solve();
     }
 
@@ -68,7 +81,29 @@ class Calc {
      * in apex point (B) which is 90 degrees to AB hence the angle between AB and
      * BC is 90 degrees + the grinding angle minus the correction angle
      */
-    
+    distance_center_axel_to_center_support(angle_degree){
+	corrected_angle = rad(angle_degree) + 0.5 * Math.PI - this.correction_angle
+        return {
+	    Math.sqrt(
+		this.apex_to_center_support**2
+		    + this.radius_wheel**2
+		    - 2
+		    * this.apex_to_center_support
+		    * this.radius_wheel
+		    * Math.cos(corrected_angle)
+            )
+	}    
+    }
+
+    distance_outside_support_to_wheel(angle_degree){
+	return {
+	    this.distance_center_axel_to_center_support(angle_degree)
+		- this.radius_wheel
+		+ this.radius_support
+	}
+    }
+
+
     solve() {
         var a = 45./180.*Math.PI;
         var b = Math.PI;
